@@ -16,7 +16,7 @@ const {
 } = process.env;
 const auth = require("../middlewares/auth");
 
-router.get("/convert", auth, (req, res) => {
+router.post("/convert", auth, (req, res) => {
   convert();
   res.sendStatus(200);
 });
