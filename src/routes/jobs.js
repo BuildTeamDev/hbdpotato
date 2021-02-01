@@ -2,6 +2,8 @@ const express = require("express");
 const router = new express.Router();
 const hive = require("@hiveio/hive-js");
 hive.api.setOptions({url: "https://anyx.io/"});
+const fetch = require("node-fetch");
+
 const {
   ACCOUNT,
   WIF,
@@ -14,7 +16,7 @@ const {
 } = process.env;
 const auth = require("../middlewares/auth");
 
-router.post("/convert", auth, (req, res) => {
+router.get("/convert", auth, (req, res) => {
   convert();
   res.sendStatus(200);
 });
@@ -25,6 +27,21 @@ const timeout = ms => {
 };
 
 const convert = async () => {
+  const bittrexSBD = await (await fetch(
+    "https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-HBD"
+  )).json();
+  const bittrexBTC = await (await fetch(
+    "https://api.bittrex.com/api/v1.1/public/getticker?market=USD-BTC"
+  )).json();
+  console.log(bittrexBTC, bittrexSBD);
+
+  const hbdPrice = (bittrexSBD.result.Last * bittrexBTC.result.Last).toFixed(2);
+  console.log(hbdPrice);
+
+  if (hbdPrice > 1.0) {
+    return;
+  }
+
   let account = await hive.api.getAccountsAsync([ACCOUNT]);
   const initialHBD = account[0].hbd_balance;
   const hiveBalance = account[0].balance;
